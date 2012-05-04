@@ -42,7 +42,8 @@ namespace PoolVision
         public static string SqlConString = "SERVER=127.0.0.1;" +
                 "DATABASE=magiccards;" +
                 "UID=root;" +
-                "Allow Zero Datetime=true";
+                "Allow Zero Datetime=true;" +
+                "Password='password'";
 
         public MySqlClient sql = new MySqlClient(SqlConString);
 
