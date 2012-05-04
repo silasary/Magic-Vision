@@ -1,1 +1,3 @@
 MagicVision/bin/Debug/*
+MagicVision/DirectX.Capture/obj/Debug/*
+MagicVision/DShowNET/obj/Debug/*
