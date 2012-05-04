@@ -31,7 +31,7 @@ namespace PoolVision
         private Bitmap filteredBitmap;
         private Bitmap cardBitmap;
         private Bitmap cardArtBitmap;
-        private String refCardDir = @"C:\Users\Pete\Pictures\New Phyrexia\Crops\";
+        private String refCardDir = @"D:/Work/Magic OCR/cardimages/Crops/"; //@"C:\Users\Pete\Pictures\New Phyrexia\Crops\";
         private Capture capture = null;
         private Filters cameraFilters = new Filters();
         private List<MagicCard> magicCards = new List<MagicCard>();
@@ -238,13 +238,9 @@ namespace PoolVision
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            cameraBitmap = new Bitmap(640, 480);
-            capture = new Capture(cameraFilters.VideoInputDevices[0], cameraFilters.AudioInputDevices[0]);
-            VideoCapabilities vc = capture.VideoCaps;
-            capture.FrameSize = new Size(640, 480);
-            capture.PreviewWindow = cam;
-			capture.FrameEvent2 += new Capture.HeFrame(CaptureDone);
-			capture.GrapImg();
+            for( int i = 0; i < cameraFilters.VideoInputDevices.Count; i++ ) {
+                comboBox1.Items.Add( new CameraFilter( cameraFilters.VideoInputDevices[i] ) );
+            }
 
             loadSourceCards();
         }
@@ -258,7 +254,7 @@ namespace PoolVision
                     ReferenceCard card = new ReferenceCard();
                     card.cardId = (String)r["id"];
                     card.name = (String)r["Name"];
-                    card.pHash = (UInt64)r["pHash"];
+                    card.pHash = UInt64.Parse( (String)r["pHash"] );
                     card.dataRow = r;
 
                     referenceCards.Add(card);
@@ -359,6 +355,27 @@ namespace PoolVision
                     }
                 }
             }
+        }
+
+        private void button1_Click_1( object sender, EventArgs e ) {
+            cameraBitmap = new Bitmap( 640, 480 );
+            capture = new Capture( ( (CameraFilter)comboBox1.SelectedItem ).filter, cameraFilters.AudioInputDevices[0] );
+            VideoCapabilities vc = capture.VideoCaps;
+            capture.FrameSize = new Size( 640, 480 );
+            capture.PreviewWindow = cam;
+            capture.FrameEvent2 += new Capture.HeFrame( CaptureDone );
+            capture.GrapImg();
+        }
+    }
+
+    class CameraFilter {
+        public Filter filter;
+        public override String ToString() {
+            return filter.Name;
+        }
+
+        public CameraFilter( Filter filt ) {
+            filter = filt;
         }
     }
 
