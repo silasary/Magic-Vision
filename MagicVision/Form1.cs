@@ -13,7 +13,6 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing.Imaging;
 using DirectX.Capture;
-using Microsoft.VisualBasic;
 using AForge;
 using AForge.Imaging;
 using AForge.Imaging.Filters;
@@ -21,9 +20,14 @@ using AForge.Math.Geometry;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading;
+using NKH.MindSqualls;
+using NKH.MindSqualls.MotorControl;
 
 namespace PoolVision {
     public partial class Form1 : Form {
+        NxtBrick brick = new NxtBrick( NxtCommLinkType.USB, 1 );
+
         private Bitmap cameraBitmap;
         private Bitmap cameraBitmapLive;
         private Bitmap filteredBitmap;
@@ -41,7 +45,7 @@ namespace PoolVision {
                 "DATABASE=magiccards;" +
                 "UID=root;" +
                 "Allow Zero Datetime=true;" +
-                "Password='password'";
+                "Password=''";
 
         public MySqlClient sql = new MySqlClient( SqlConString );
 
@@ -70,7 +74,6 @@ namespace PoolVision {
             }
             return area / 2;
         }
-
         private void detectQuads( Bitmap bitmap ) {
             // Greyscale
             filteredBitmap = Grayscale.CommonAlgorithms.BT709.Apply( bitmap );
@@ -97,7 +100,7 @@ namespace PoolVision {
             blobCounter.ProcessImage( bitmapData );
             Blob[] blobs = blobCounter.GetObjectsInformation();
             filteredBitmap.UnlockBits( bitmapData );
-
+            
             SimpleShapeChecker shapeChecker = new SimpleShapeChecker();
 
             Bitmap bm = new Bitmap( filteredBitmap.Width, filteredBitmap.Height, PixelFormat.Format24bppRgb );
@@ -120,15 +123,17 @@ namespace PoolVision {
                     // get sub-type
                     PolygonSubType subType = shapeChecker.CheckPolygonSubType( corners );
 
-                    // Only return 4 corner rectanges
+                    // Only return 4 corner rectangles
                     if( ( subType == PolygonSubType.Parallelogram || subType == PolygonSubType.Rectangle ) && corners.Count == 4 ) {
                         // Check if its sideways, if so rearrange the corners so it's veritcal
                         rearrangeCorners( corners );
 
                         // Prevent it from detecting the same card twice
                         foreach( IntPoint point in cardPositions ) {
-                            if( corners[0].DistanceTo( point ) < 40 )
+                            if( corners[0].DistanceTo( point ) < 40 ) {
+                                
                                 sameCard = true;
+                            }
                         }
 
                         if( sameCard )
@@ -170,6 +175,10 @@ namespace PoolVision {
             g.Dispose();
 
             filteredBitmap = bm;
+        }
+
+        private void setLabelText( String text ) {
+            label3.Text = text;
         }
 
         // Move the corners a fixed amount
@@ -219,8 +228,19 @@ namespace PoolVision {
             for( int i = 0; i < cameraFilters.VideoInputDevices.Count; i++ ) {
                 comboBox1.Items.Add( new CameraFilter( cameraFilters.VideoInputDevices[i] ) );
             }
+            comboBox1.SelectedIndex = cameraFilters.VideoInputDevices.Count - 1;
+            startCamera();
 
             loadSourceCards();
+
+            brick.InitSensors();
+            brick.MotorA = new NxtMotor();
+            brick.MotorB = new NxtMotor();
+            brick.MotorC = new NxtMotor();
+
+            // Start the MotorControl program on the NXT and wait until it is running.
+            //MotorControlProxy.StartMotorControl( brick.CommLink );
+            //System.Threading.Thread.Sleep( 500 );
         }
 
         private void loadSourceCards() {
@@ -320,6 +340,10 @@ namespace PoolVision {
         }
 
         private void button1_Click_1( object sender, EventArgs e ) {
+            startCamera();
+        }
+
+        private void startCamera() {
             cameraBitmap = new Bitmap( 640, 480 );
             capture = new Capture( ( (CameraFilter)comboBox1.SelectedItem ).filter, cameraFilters.AudioInputDevices[0] );
             VideoCapabilities vc = capture.VideoCaps;
@@ -327,6 +351,74 @@ namespace PoolVision {
             capture.PreviewWindow = cam;
             capture.FrameEvent2 += new Capture.HeFrame( CaptureDone );
             capture.GrapImg();
+        }
+
+        private void button2_Click( object sender, EventArgs e ) {
+
+
+            /*MotorControlProxy.CONTROLLED_MOTORCMD( brick.CommLink, MotorControlMotorPort.PortB, "50", "90", '5' );
+            System.Threading.Thread.Sleep( 1000 );
+            MotorControlProxy.StopMotorControl( brick.CommLink );
+            System.Threading.Thread.Sleep( 1000 );
+            MotorControlProxy.StartMotorControl( brick.CommLink );*/
+
+            brick.MotorA.Run( 100, 110 );
+            System.Threading.Thread.Sleep( 500 );
+            brick.MotorA.Brake();
+            System.Threading.Thread.Sleep( 200 );
+            brick.MotorA.Run( -100, 100 );
+        }
+
+        enum MotorBPosition {
+            UP,
+            MID,
+            DOWN
+        };
+        private void MotorBMove( MotorBPosition position ) {
+            int[] power = new int[] { 100, 40, -100 };
+            uint[] tacho = new uint[] { 30, 0, 30 };
+            int[] time = new int[] { 190, 0, 200 };
+            //int[] power = new int[] { 32, 40, -125 };
+            //int power = ( isUp ? 60 : -50 );
+
+            brick.MotorB.Run( (sbyte)power[(int)position], tacho[(uint)position] );
+            System.Threading.Thread.Sleep( time[(int)position] );
+            brick.MotorB.Brake();
+            System.Threading.Thread.Sleep( 500 );
+
+            /*String power = ( isUp ? "25" : "-10" );
+            String tacho = ( isUp ? "45" : "5" );
+            int times = ( isUp ? 2 : 1 );
+            for( int i = 0; i < times; i++ ) {
+                MotorControlProxy.CONTROLLED_MOTORCMD( brick.CommLink, MotorControlMotorPort.PortB, power, tacho, '5' );
+                System.Threading.Thread.Sleep( 1000 );
+                MotorControlProxy.StopMotorControl( brick.CommLink );
+                System.Threading.Thread.Sleep( 1000 );
+                MotorControlProxy.StartMotorControl( brick.CommLink );
+                System.Threading.Thread.Sleep( 1000 );
+            }*/
+        }
+
+        private void button3_Click( object sender, EventArgs e ) {
+            MotorBMove( MotorBPosition.DOWN );
+            //MotorBMove( MotorBPosition.MID );
+            MotorBMove( MotorBPosition.UP );
+
+            // Run the motor in port B with fill power forward for 3600 degrees.
+            /*MotorControlProxy.CONTROLLED_MOTORCMD( brick.CommLink, MotorControlMotorPort.PortB, "-10", "5", '5' );
+            System.Threading.Thread.Sleep( 1000 );
+            MotorControlProxy.StopMotorControl( brick.CommLink );
+            System.Threading.Thread.Sleep( 1000 );
+            MotorControlProxy.StartMotorControl( brick.CommLink );*/
+            
+            /*brick.MotorB.Run( 25,  );
+            
+            System.Threading.Thread.Sleep( 300 );
+            brick.MotorB.Brake();*/
+        }
+
+        private void button4_Click( object sender, EventArgs e ) {
+            MotorBMove( MotorBPosition.UP );
         }
     }
 
