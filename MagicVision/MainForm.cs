@@ -37,7 +37,7 @@ namespace MagicVision
             InitializeComponent();
         }
 
-        private void button1_Click( object sender, EventArgs e ) {
+        private void RecalculateHashes_Click( object sender, EventArgs e ) {
             foreach (ReferenceCard card in referenceCards) {
                 var image = Path.Combine(refCardDir, (string)card.dataRow["Set"], card.cardId + ".jpg");
                 if (File.Exists(image))
@@ -50,7 +50,7 @@ namespace MagicVision
 
 
 
-        private void Form1_Load( object sender, EventArgs e ) {
+        private void MainForm_Load( object sender, EventArgs e ) {
             for( int i = 0; i < cameraFilters.VideoInputDevices.Count; i++ ) {
                 comboBox1.Items.Add( new CameraFilter( cameraFilters.VideoInputDevices[i] ) );
             }
@@ -105,7 +105,7 @@ namespace MagicVision
                 }
         }
 
-        private void button1_Click_1( object sender, EventArgs e ) {
+        private void StartCameraButton_Click( object sender, EventArgs e ) {
             capture = new Capture( ( (CameraFilter)comboBox1.SelectedItem ).filter, cameraFilters.AudioInputDevices[0] );
             VideoCapabilities vc = capture.VideoCaps;
             capture.FrameSize = new Size( 640, 480 );
