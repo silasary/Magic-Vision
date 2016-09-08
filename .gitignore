@@ -1,5 +1,7 @@
-MagicVision/bin/Debug/*
-MagicVision/DirectX.Capture/obj/Debug/*
-MagicVision/DShowNET/obj/Debug/*
-MagicVision/obj/x86/Debug/*
 .vs/
+*/bin/*
+*/obj/*
+MagicVision/DirectX.Capture/bin/
+MagicVision/DirectX.Capture/obj/
+MagicVision/DShowNET/bin/
+MagicVision/DShowNET/obj/
