@@ -37,9 +37,9 @@ namespace PoolVision {
         private List<ReferenceCard> referenceCards = new List<ReferenceCard>();
         static readonly object _locker = new object();
 
-        public static string SqlConString = "SERVER=127.0.0.1;" +
+        public static string SqlConString = "SERVER=192.168.1.123;" +
                 "DATABASE=magiccards;" +
-                "UID=root;" +
+                "UID=magiccards;" +
                 "Allow Zero Datetime=true;" +
                 "Password='password'";
 
