@@ -42,6 +42,7 @@
             this.cardInfo = new System.Windows.Forms.TextBox();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
             this.StartCameraButton = new System.Windows.Forms.Button();
+            this.watchDesktopButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.image_output)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.cam)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.cardImage)).BeginInit();
@@ -179,11 +180,22 @@
             this.StartCameraButton.UseVisualStyleBackColor = true;
             this.StartCameraButton.Click += new System.EventHandler(this.StartCameraButton_Click);
             // 
+            // watchDesktopButton
+            // 
+            this.watchDesktopButton.Location = new System.Drawing.Point(322, 511);
+            this.watchDesktopButton.Name = "watchDesktopButton";
+            this.watchDesktopButton.Size = new System.Drawing.Size(104, 23);
+            this.watchDesktopButton.TabIndex = 19;
+            this.watchDesktopButton.Text = "Watch Desktop";
+            this.watchDesktopButton.UseVisualStyleBackColor = true;
+            this.watchDesktopButton.Click += new System.EventHandler(this.watchDesktopButton_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1218, 538);
+            this.Controls.Add(this.watchDesktopButton);
             this.Controls.Add(this.StartCameraButton);
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.groupBox1);
@@ -228,6 +240,7 @@
         private System.Windows.Forms.TextBox cardInfo;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Button StartCameraButton;
+        private System.Windows.Forms.Button watchDesktopButton;
     }
 }
 

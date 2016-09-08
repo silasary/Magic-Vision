@@ -20,7 +20,7 @@ namespace MagicVision
         private Bitmap cardBitmap;
         private Bitmap cardArtBitmap;
 
-        static readonly object _locker = new object();
+        internal static readonly object _locker = new object();
 
         public List<MagicCard> magicCards { get; private set; } = new List<MagicCard>();
         private List<MagicCard> magicCardsLastFrame = new List<MagicCard>();
@@ -75,6 +75,7 @@ namespace MagicVision
                 if (bestMatch != null)
                 {
                     card.referenceCard = bestMatch;
+                    card.hammingValue = lowestHamming;
                     //Debug.WriteLine("Highest Similarity: " + bestMatch.name + " ID: " + bestMatch.cardId.ToString());
 
                     Graphics g = Graphics.FromImage(cameraBitmap);
@@ -198,6 +199,7 @@ namespace MagicVision
                         card.corners = corners;
                         card.cardBitmap = cardBitmap;
                         card.cardArtBitmap = cardArtBitmap;
+                        card.area = GetArea(corners);
 
                         magicCards.Add(card);
                     }

@@ -13,5 +13,7 @@ namespace MagicVision.DataClasses
         public List<IntPoint> corners;
         public Bitmap cardBitmap;
         public Bitmap cardArtBitmap;
+        internal int hammingValue;
+        internal double area;
     }
 }

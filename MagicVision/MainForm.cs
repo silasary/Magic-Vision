@@ -8,12 +8,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Drawing.Imaging;
+using System.Linq;
 using DirectX.Capture;
 using System.Diagnostics;
 using MagicVision.DataClasses;
 using PoolVision;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace MagicVision
 {
@@ -37,15 +38,20 @@ namespace MagicVision
             InitializeComponent();
         }
 
-        private void RecalculateHashes_Click( object sender, EventArgs e ) {
-            foreach (ReferenceCard card in referenceCards) {
-                var image = Path.Combine(refCardDir, (string)card.dataRow["Set"], card.cardId + ".jpg");
-                if (File.Exists(image))
-                {
-                    Phash.ph_dct_imagehash(image, ref card.pHash );
-                    sql.dbNone( "UPDATE cards SET pHash=" + card.pHash.ToString() + " WHERE id=" + card.cardId );
-                }
-            }
+        private void RecalculateHashes_Click(object sender, EventArgs e)
+        {
+            Task.Factory.StartNew(() =>
+           {
+               foreach (ReferenceCard card in referenceCards)
+               {
+                   var image = Path.Combine(refCardDir, (string)card.dataRow["Set"], card.cardId + ".jpg");
+                   if (File.Exists(image))
+                   {
+                       Phash.ph_dct_imagehash(image, ref card.pHash);
+                       sql.dbNone("UPDATE cards SET pHash=" + card.pHash.ToString() + " WHERE id=" + card.cardId);
+                   }
+               }
+           });
         }
 
 
@@ -86,23 +92,33 @@ namespace MagicVision
 
 
         private void camWindow_MouseClick( object sender, MouseEventArgs e ) {
+            lock (ImageRecognition._locker)
+            {
                 foreach (MagicCard card in magicCards)
                 {
                     Rectangle rect = new Rectangle(card.corners[0].X, card.corners[0].Y, (card.corners[1].X - card.corners[0].X), (card.corners[2].Y - card.corners[1].Y));
                     if (rect.Contains(e.Location))
                     {
                         Debug.WriteLine(card.referenceCard.name);
-                        cardArtImage.Image = card.cardArtBitmap;
-                        cardImage.Image = card.cardBitmap;
-
-                        cardInfo.Text = "Card Name: " + card.referenceCard.name + Environment.NewLine +
-                            "Set: " + (String)card.referenceCard.dataRow["Set"] + Environment.NewLine +
-                            "Type: " + (String)card.referenceCard.dataRow["Type"] + Environment.NewLine +
-                            "Casting Cost: " + (String)card.referenceCard.dataRow["Cost"] + Environment.NewLine +
-                            "Rarity: " + (String)card.referenceCard.dataRow["Rarity"] + Environment.NewLine;
+                        DebugCard(card);
 
                     }
                 }
+            }
+        }
+
+        private void DebugCard(MagicCard card)
+        {
+            cardArtImage.Image = card.cardArtBitmap;
+            cardImage.Image = card.cardBitmap;
+
+            cardInfo.Text = "Card Name: " + card.referenceCard.name + Environment.NewLine +
+                "Set: " + (String)card.referenceCard.dataRow["Set"] + Environment.NewLine +
+                "Type: " + (String)card.referenceCard.dataRow["Type"] + Environment.NewLine +
+                "Casting Cost: " + (String)card.referenceCard.dataRow["Cost"] + Environment.NewLine +
+                "Rarity: " + (String)card.referenceCard.dataRow["Rarity"] + Environment.NewLine +
+                "Hamming: " + card.hammingValue + Environment.NewLine +
+                "Area: " + card.area;
         }
 
         private void StartCameraButton_Click( object sender, EventArgs e ) {
@@ -112,6 +128,38 @@ namespace MagicVision
             capture.PreviewWindow = cam;
             capture.FrameEvent2 += new Capture.HeFrame( CaptureDone );
             capture.GrapImg();
+        }
+
+        private void watchDesktopButton_Click(object sender, EventArgs e)
+        {
+            var timer = new Timer();
+            timer.Interval = 30;
+            timer.Tick += (s, ee) => { CaptureDesktop(); };
+            timer.Enabled = true;
+        }
+
+        private void CaptureDesktop()
+        {
+            Bitmap desktop = new Bitmap(640, 480);
+            var gfxScreenshot = Graphics.FromImage(desktop);
+
+            // Take the screenshot from the upper left corner to the right bottom corner.
+            gfxScreenshot.CopyFromScreen(Screen.PrimaryScreen.Bounds.X,
+                                        Screen.PrimaryScreen.Bounds.Y,
+                                        0,
+                                        0,
+                                        Screen.PrimaryScreen.Bounds.Size,
+                                        CopyPixelOperation.SourceCopy);
+
+            imageRecognition.ScanImage(desktop);
+            if (imageRecognition.magicCards.Count > 0)
+            {
+                magicCards = imageRecognition.magicCards.ToArray();
+                var Card = magicCards.
+                DebugCard(magicCards[0]);
+            }
+            image_output.Image = imageRecognition.filteredBitmap;
+            camWindow.Image = imageRecognition.cameraBitmap;
         }
     }
 }
