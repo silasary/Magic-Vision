@@ -5,25 +5,23 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Windows.Forms;
 using System.Drawing.Imaging;
 using DirectX.Capture;
-using Microsoft.VisualBasic;
 using AForge;
 using AForge.Imaging;
 using AForge.Imaging.Filters;
 using AForge.Math.Geometry;
 using System.Diagnostics;
+using MagicVision.DataClasses;
+using PoolVision;
 using System.IO;
-using System.Runtime.InteropServices;
 
-namespace PoolVision {
-    public partial class Form1 : Form {
+namespace MagicVision
+{
+    public partial class MainForm : Form {
         private Bitmap cameraBitmap;
         private Bitmap cameraBitmapLive;
         private Bitmap filteredBitmap;
@@ -45,14 +43,18 @@ namespace PoolVision {
 
         public MySqlClient sql = new MySqlClient( SqlConString );
 
-        public Form1() {
+        public MainForm() {
             InitializeComponent();
         }
 
         private void button1_Click( object sender, EventArgs e ) {
-            foreach( ReferenceCard card in referenceCards ) {
-                Phash.ph_dct_imagehash( refCardDir + (String)card.dataRow["Set"] + "\\" + card.cardId + ".jpg", ref card.pHash );
-                sql.dbNone( "UPDATE cards SET pHash=" + card.pHash.ToString() + " WHERE id=" + card.cardId );
+            foreach (ReferenceCard card in referenceCards) {
+                var image = Path.Combine(refCardDir, (string)card.dataRow["Set"], card.cardId + ".jpg");
+                if (File.Exists(image))
+                {
+                    Phash.ph_dct_imagehash(image, ref card.pHash );
+                    sql.dbNone( "UPDATE cards SET pHash=" + card.pHash.ToString() + " WHERE id=" + card.cardId );
+                }
             }
         }
 
@@ -329,54 +331,4 @@ namespace PoolVision {
             capture.GrapImg();
         }
     }
-
-    class CameraFilter {
-        public Filter filter;
-        public override String ToString() {
-            return filter.Name;
-        }
-
-        public CameraFilter( Filter filt ) {
-            filter = filt;
-        }
-    }
-
-    class ReferenceCard {
-        public string cardId;
-        public string name;
-        public UInt64 pHash;
-        public DataRow dataRow;
-    }
-
-    class MagicCard {
-        public ReferenceCard referenceCard;
-        public List<IntPoint> corners;
-        public Bitmap cardBitmap;
-        public Bitmap cardArtBitmap;
-    }
-
-    public class Phash {
-
-        [DllImport( "pHash.dll", CallingConvention = CallingConvention.Cdecl )]
-        public static extern int ph_dct_imagehash( string file_name, ref UInt64 Hash );
-
-        private static UInt64 m1 = 0x5555555555555555;
-        private static UInt64 m2 = 0x3333333333333333;
-        private static UInt64 h01 = 0x0101010101010101;
-        private static UInt64 m4 = 0x0f0f0f0f0f0f0f0f;
-
-        // Calculate the similarity between two hashes
-        public static int HammingDistance( UInt64 hash1, UInt64 hash2 ) {
-            UInt64 x = hash1 ^ hash2;
-
-
-            x -= ( x >> 1 ) & m1;
-            x = ( x & m2 ) + ( ( x >> 2 ) & m2 );
-            x = ( x + ( x >> 4 ) ) & m4;
-            UInt64 res = ( x * h01 ) >> 56;
-
-            return (int)res;
-        }
-    }
-
 }

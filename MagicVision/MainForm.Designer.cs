@@ -1,6 +1,6 @@
-﻿namespace PoolVision
+﻿namespace MagicVision
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
