@@ -26,15 +26,18 @@ SET time_zone = "+00:00";
 -- Table structure for table `cards`
 --
 
-CREATE TABLE IF NOT EXISTS `cards` (
-  `id` text,
+CREATE TABLE `cards` (
+  `id` int(11) NOT NULL,
   `Name` text,
   `pHash` text CHARACTER SET cp1251,
   `Set` text,
   `Type` text,
   `Cost` text,
-  `Rarity` text
+  `Rarity` text,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 --
 -- Dumping data for table `cards`

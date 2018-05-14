@@ -8,7 +8,7 @@ namespace MagicVision.DataClasses
 {
     class ReferenceCard
     {
-        public string cardId;
+        public int cardId;
         public string name;
         public UInt64 pHash;
         public DataRow dataRow;

@@ -41,20 +41,21 @@ namespace PoolVision {
         }
 
         public DataTable dbResult( String query ) {
-            MySqlCommand command = sql.CreateCommand();
+            var command = sql.CreateCommand();
             command.CommandText = query;
+            using (var dataAd = new MySqlDataAdapter(command))
+            {
 
-            DataTable selectDT = new DataTable();
-            MySqlDataAdapter dataAd = new MySqlDataAdapter( command );
+                var selectDT = new DataTable();
+                dataAd.Fill(selectDT);
 
-            dataAd.Fill( selectDT );
-
-            return selectDT;
+                return selectDT;
+            }
 
         }
 
         internal int dbNone( string query ) {
-            MySqlCommand command = sql.CreateCommand();
+            var command = sql.CreateCommand();
             //MySqlDataReader Reader;
             command.CommandText = query;
             return command.ExecuteNonQuery();

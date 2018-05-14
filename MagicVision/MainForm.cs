@@ -24,7 +24,7 @@ namespace MagicVision
         private Filters cameraFilters = new Filters();
         private List<ReferenceCard> referenceCards = new List<ReferenceCard>();
 
-        public static string SqlConString = "SERVER=192.168.1.123;" +
+        public static string SqlConString = "SERVER=127.0.0.1;" +
                 "DATABASE=magiccards;" +
                 "UID=magiccards;" +
                 "Allow Zero Datetime=true;" +
@@ -69,7 +69,7 @@ namespace MagicVision
             using( DataTable Reader = sql.dbResult( "SELECT * FROM cards" ) ) {
                 foreach( DataRow r in Reader.Rows ) {
                     ReferenceCard card = new ReferenceCard();
-                    card.cardId = (String)r["id"];
+                    card.cardId = (int)r["id"];
                     card.name = (String)r["Name"];
                     card.pHash = UInt64.Parse( (String)r["pHash"] );
                     card.dataRow = r;
@@ -94,6 +94,11 @@ namespace MagicVision
         private void camWindow_MouseClick( object sender, MouseEventArgs e ) {
             lock (ImageRecognition._locker)
             {
+                if (magicCards == null)
+                {
+                    return;
+                }
+
                 foreach (MagicCard card in magicCards)
                 {
                     Rectangle rect = new Rectangle(card.corners[0].X, card.corners[0].Y, (card.corners[1].X - card.corners[0].X), (card.corners[2].Y - card.corners[1].Y));
@@ -140,7 +145,7 @@ namespace MagicVision
 
         private void CaptureDesktop()
         {
-            Bitmap desktop = new Bitmap(640, 480);
+            Bitmap desktop = new Bitmap(640 * 2, 480 * 2);
             var gfxScreenshot = Graphics.FromImage(desktop);
 
             // Take the screenshot from the upper left corner to the right bottom corner.
@@ -155,7 +160,7 @@ namespace MagicVision
             if (imageRecognition.magicCards.Count > 0)
             {
                 magicCards = imageRecognition.magicCards.ToArray();
-                var Card = magicCards.
+                //var Card = magicCards.
                 DebugCard(magicCards[0]);
             }
             image_output.Image = imageRecognition.filteredBitmap;
