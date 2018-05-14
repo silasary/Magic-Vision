@@ -34,9 +34,11 @@ CREATE TABLE `cards` (
   `Type` text,
   `Cost` text,
   `Rarity` text,
+  `Num` varchar(6) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 
 --

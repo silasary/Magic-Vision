@@ -1,11 +1,18 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27428.2027
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MagicVision", "MagicVision\MagicVision.csproj", "{6E246F05-9296-492B-B7F9-DCC99ED6FD4B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectX.Capture", "MagicVision\DirectX.Capture\DirectX.Capture.csproj", "{8C0015DB-69E1-46E7-8705-3A4F8BE2E5E7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DShowNET", "MagicVision\DShowNET\DShowNET.csproj", "{CE009BFA-5EF6-4153-B2A1-2FA79698A9AE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F85E3035-54E7-4CAC-B336-4A290522348F}"
+	ProjectSection(SolutionItems) = preProject
+		cards.sql = cards.sql
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,5 +57,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {411E5E34-6C79-4251-9ECE-7AA2E2A13353}
 	EndGlobalSection
 EndGlobal

@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using MySql.Data.MySqlClient;
 using System.Data;
 
 
-namespace PoolVision {
+namespace PoolVision
+{
     public class MySqlClient {
         private MySqlConnection sql;
 

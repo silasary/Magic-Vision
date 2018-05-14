@@ -46,7 +46,7 @@ namespace MagicVision
 
         private void matchCard()
         {
-            int cardTempId = 0;
+            var cardTempId = 0;
             foreach (MagicCard card in magicCards)
             {
                 cardTempId++;
@@ -59,7 +59,7 @@ namespace MagicVision
                 UInt64 cardHash = 0;
                 Phash.ph_dct_imagehash("tempCard" + cardTempId + ".jpg", ref cardHash);
 
-                int lowestHamming = int.MaxValue;
+                var lowestHamming = int.MaxValue;
                 ReferenceCard bestMatch = null;
 
                 foreach (ReferenceCard referenceCard in referenceCards)
@@ -79,8 +79,9 @@ namespace MagicVision
                     //Debug.WriteLine("Highest Similarity: " + bestMatch.name + " ID: " + bestMatch.cardId.ToString());
 
                     Graphics g = Graphics.FromImage(cameraBitmap);
-                    g.DrawString(bestMatch.name, new Font("Tahoma", 25), Brushes.Black, new PointF(card.corners[0].X - 29, card.corners[0].Y - 39));
-                    g.DrawString(bestMatch.name, new Font("Tahoma", 25), Brushes.Yellow, new PointF(card.corners[0].X - 30, card.corners[0].Y - 40));
+                    var font = new Font("Tahoma", 25);
+                    g.DrawString(bestMatch.Name, font, Brushes.Black, new PointF(card.corners[0].X - 29, card.corners[0].Y - 39));
+                    g.DrawString(bestMatch.Name, font, Brushes.Yellow, new PointF(card.corners[0].X - 30, card.corners[0].Y - 40));
                     g.Dispose();
                 }
             }

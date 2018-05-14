@@ -19,10 +19,10 @@ using System.Threading.Tasks;
 namespace MagicVision
 {
     public partial class MainForm : Form {
-        private String refCardDir = @"D:/Work/Magic OCR/cardimages/Crops/"; //@"C:\Users\Pete\Pictures\New Phyrexia\Crops\";
-        private Capture capture = null;
-        private Filters cameraFilters = new Filters();
-        private List<ReferenceCard> referenceCards = new List<ReferenceCard>();
+        public static String refCardDir = Path.Combine(Path.GetDirectoryName(typeof(MainForm).Assembly.Location), "Crops");
+        private Capture capture;
+        private readonly Filters cameraFilters = new Filters();
+        private static List<ReferenceCard> referenceCards = new List<ReferenceCard>();
 
         public static string SqlConString = "SERVER=127.0.0.1;" +
                 "DATABASE=magiccards;" +
@@ -30,9 +30,10 @@ namespace MagicVision
                 "Allow Zero Datetime=true;" +
                 "Password='password'";
 
-        public MySqlClient sql = new MySqlClient( SqlConString );
+        public static MySqlClient sql = new MySqlClient( SqlConString );
         private ImageRecognition imageRecognition;
         private MagicCard[] magicCards;
+        private Timer desktop_timer;
 
         public MainForm() {
             InitializeComponent();
@@ -65,17 +66,27 @@ namespace MagicVision
             imageRecognition = new ImageRecognition(referenceCards);
         }
 
-        private void loadSourceCards() {
-            using( DataTable Reader = sql.dbResult( "SELECT * FROM cards" ) ) {
-                foreach( DataRow r in Reader.Rows ) {
-                    ReferenceCard card = new ReferenceCard();
-                    card.cardId = (int)r["id"];
-                    card.name = (String)r["Name"];
-                    card.pHash = UInt64.Parse( (String)r["pHash"] );
-                    card.dataRow = r;
+        private void loadSourceCards()
+        {
+            using (DataTable Reader = sql.dbResult("SELECT * FROM cards"))
+            {
+                foreach (DataRow r in Reader.Rows)
+                {
+                    var card = new ReferenceCard
+                    {
+                        Id = (int)r["id"],
+                        CollectorNumber = (string)r["Num"],
+                        Name = (String)r["Name"],
+                        pHash = UInt64.Parse((String)r["pHash"]),
+                        dataRow = r
+                    };
 
-                    referenceCards.Add( card );
+                    referenceCards.Add(card);
                 }
+            }
+            if (!referenceCards.Any())
+            {
+
             }
         }
 
@@ -104,7 +115,7 @@ namespace MagicVision
                     Rectangle rect = new Rectangle(card.corners[0].X, card.corners[0].Y, (card.corners[1].X - card.corners[0].X), (card.corners[2].Y - card.corners[1].Y));
                     if (rect.Contains(e.Location))
                     {
-                        Debug.WriteLine(card.referenceCard.name);
+                        Debug.WriteLine(card.referenceCard.Name);
                         DebugCard(card);
 
                     }
@@ -117,7 +128,7 @@ namespace MagicVision
             cardArtImage.Image = card.cardArtBitmap;
             cardImage.Image = card.cardBitmap;
 
-            cardInfo.Text = "Card Name: " + card.referenceCard.name + Environment.NewLine +
+            cardInfo.Text = "Card Name: " + card.referenceCard.Name + Environment.NewLine +
                 "Set: " + (String)card.referenceCard.dataRow["Set"] + Environment.NewLine +
                 "Type: " + (String)card.referenceCard.dataRow["Type"] + Environment.NewLine +
                 "Casting Cost: " + (String)card.referenceCard.dataRow["Cost"] + Environment.NewLine +
@@ -128,7 +139,7 @@ namespace MagicVision
 
         private void StartCameraButton_Click( object sender, EventArgs e ) {
             capture = new Capture( ( (CameraFilter)comboBox1.SelectedItem ).filter, cameraFilters.AudioInputDevices[0] );
-            VideoCapabilities vc = capture.VideoCaps;
+            var vc = capture.VideoCaps;
             capture.FrameSize = new Size( 640, 480 );
             capture.PreviewWindow = cam;
             capture.FrameEvent2 += new Capture.HeFrame( CaptureDone );
@@ -137,15 +148,21 @@ namespace MagicVision
 
         private void watchDesktopButton_Click(object sender, EventArgs e)
         {
-            var timer = new Timer();
-            timer.Interval = 30;
-            timer.Tick += (s, ee) => { CaptureDesktop(); };
-            timer.Enabled = true;
+            desktop_timer = new Timer
+            {
+                Interval = 30
+            };
+            desktop_timer.Tick += (s, ee) => { CaptureDesktop(); };
+            desktop_timer.Enabled = true;
+            // Make sure the timer is disposed when we close.
+            if (components == null)
+                components = new System.ComponentModel.Container();
+            components.Add(desktop_timer);
         }
 
         private void CaptureDesktop()
         {
-            Bitmap desktop = new Bitmap(640 * 2, 480 * 2);
+            var desktop = new Bitmap(640 * 2, 480 * 2);
             var gfxScreenshot = Graphics.FromImage(desktop);
 
             // Take the screenshot from the upper left corner to the right bottom corner.
