@@ -56,7 +56,7 @@ namespace MagicVision
 
 
                 // Calculate art bitmap hash
-                UInt64 cardHash = 0;
+                ulong cardHash = 0;
                 Phash.ph_dct_imagehash("tempCard" + cardTempId + ".jpg", ref cardHash);
 
                 var lowestHamming = int.MaxValue;
@@ -64,7 +64,7 @@ namespace MagicVision
 
                 foreach (ReferenceCard referenceCard in referenceCards)
                 {
-                    int hamming = Phash.HammingDistance(referenceCard.pHash, cardHash);
+                    var hamming = Phash.HammingDistance(referenceCard.pHash, cardHash);
                     if (hamming < lowestHamming)
                     {
                         lowestHamming = hamming;
@@ -76,7 +76,7 @@ namespace MagicVision
                 {
                     card.referenceCard = bestMatch;
                     card.hammingValue = lowestHamming;
-                    //Debug.WriteLine("Highest Similarity: " + bestMatch.name + " ID: " + bestMatch.cardId.ToString());
+                    Console.WriteLine("Highest Similarity: " + bestMatch.Name + " ID: " + bestMatch.Id.ToString() + " Hamming: " + lowestHamming.ToString());
 
                     Graphics g = Graphics.FromImage(cameraBitmap);
                     var font = new Font("Tahoma", 25);

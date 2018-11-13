@@ -1,7 +1,7 @@
 ﻿using System;
 using MySql.Data.MySqlClient;
 using System.Data;
-
+using System.Collections.Generic;
 
 namespace PoolVision
 {
@@ -38,18 +38,33 @@ namespace PoolVision
             return id;
         }
 
-        public DataTable dbResult( String query ) {
-            var command = sql.CreateCommand();
-            command.CommandText = query;
-            using (var dataAd = new MySqlDataAdapter(command))
+        public DataTable dbResult(String query, Dictionary<string, object> param = null)
+        {
+            try
             {
+                var command = sql.CreateCommand();
+                command.CommandText = query;
+                if (param != null)
+                {
+                    foreach (var pair in param)
+                    {
+                        command.Parameters.AddWithValue(pair.Key, pair.Value);
+                    }
+                }
+                using (var dataAd = new MySqlDataAdapter(command))
+                {
 
-                var selectDT = new DataTable();
-                dataAd.Fill(selectDT);
+                    var selectDT = new DataTable();
+                    dataAd.Fill(selectDT);
 
-                return selectDT;
+                    return selectDT;
+                }
             }
-
+            catch (MySqlException c)
+            {
+                System.Windows.Forms.MessageBox.Show(c.ToString());
+                return null;
+            }
         }
 
         internal int dbNone( string query ) {
