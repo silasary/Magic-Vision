@@ -41,18 +41,8 @@ namespace MagicVision
 
         private void RecalculateHashes_Click(object sender, EventArgs e)
         {
-            Task.Factory.StartNew(() =>
-           {
-               foreach (ReferenceCard card in referenceCards)
-               {
-                   var image = Path.Combine(refCardDir, (string)card.dataRow["Set"], card.cardId + ".jpg");
-                   if (File.Exists(image))
-                   {
-                       Phash.ph_dct_imagehash(image, ref card.pHash);
-                       sql.dbNone("UPDATE cards SET pHash=" + card.pHash.ToString() + " WHERE id=" + card.cardId);
-                   }
-               }
-           });
+            new SetImporter(referenceCards, sql).Show();
+            hashCalcButton.Enabled = false;
         }
 
 
@@ -72,21 +62,18 @@ namespace MagicVision
             {
                 foreach (DataRow r in Reader.Rows)
                 {
-                    var card = new ReferenceCard
-                    {
-                        Id = (int)r["id"],
-                        CollectorNumber = (string)r["Num"],
-                        Name = (String)r["Name"],
-                        pHash = UInt64.Parse((String)r["pHash"]),
-                        dataRow = r
-                    };
+                    var card = new ReferenceCard(r);
 
                     referenceCards.Add(card);
                 }
             }
             if (!referenceCards.Any())
             {
-
+                using (var setImporter = new SetImporter(referenceCards, sql))
+                {
+                    setImporter.Show();
+                    hashCalcButton.Enabled = false;
+                }
             }
         }
 

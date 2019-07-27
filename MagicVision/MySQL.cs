@@ -26,7 +26,7 @@ namespace PoolVision
         public int lastInsertId() {
             DataRow r = dbRow( "SELECT last_insert_id() as lid" );
 
-            Int64 id = (Int64)r[0];
+            UInt64 id = (UInt64)r[0];
 
             return (int)id;
         }
@@ -73,6 +73,22 @@ namespace PoolVision
             DateTime origin = new DateTime( 1970, 1, 1, 0, 0, 0, 0 );
             TimeSpan diff = date - origin;
             return Math.Floor( diff.TotalSeconds );
+        }
+
+        public int InsertCard(string Name, string pHash, string Set, string Type, string Cost, string Rarity, Guid ScryfallId)
+        {
+            MySqlCommand cmd = sql.CreateCommand();
+            cmd.CommandText = "INSERT INTO `cards` (`Name`, `pHash`, `Set`, `Type`, `Cost`, `Rarity`, `sf_id`) VALUES (?name, ?phash, ?set, ?type, ?cost, ?rarity, ?sf_id)";
+            cmd.Parameters.Add("?name", MySqlDbType.VarChar).Value = Name;
+            cmd.Parameters.Add("?phash", MySqlDbType.VarChar).Value = pHash;
+            cmd.Parameters.Add("?set", MySqlDbType.VarChar).Value = Set;
+            cmd.Parameters.Add("?type", MySqlDbType.VarChar).Value = Type;
+            cmd.Parameters.Add("?cost", MySqlDbType.VarChar).Value = Cost;
+            cmd.Parameters.Add("?rarity", MySqlDbType.VarChar).Value = Rarity;
+            cmd.Parameters.Add("?sf_id", MySqlDbType.VarChar).Value = ScryfallId;
+            cmd.ExecuteNonQuery();
+
+            return lastInsertId();
         }
     }
 }
